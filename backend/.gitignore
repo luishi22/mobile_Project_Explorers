@@ -1,0 +1,15 @@
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# dependencies
+node_modules/
+
+# Seguridad 
+.env
+
+# Logs de errores (Basura)
+npm-debug.log
+yarn-error.log
+
+# Archivos del sistema operativo (Basura)
+.DS_Store
+Thumbs.db
