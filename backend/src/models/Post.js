@@ -17,7 +17,7 @@ const PostSchema = new mongoose.Schema({
   imagen_url: String, // Opcional (Foto o PDF subido a Cloudinary)
   link_externo: String, // Opcional (Si quieres poner un link a una web externa)
 
-  // 🔐 LA CLAVE: Solo los padres de esta aula verán este post
+  // LA CLAVE: Solo los padres de esta aula verán este post
   aula_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Classroom",

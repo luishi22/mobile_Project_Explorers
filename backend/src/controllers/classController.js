@@ -20,8 +20,20 @@ const createClassroom = async (req, res) => {
     const { nombre } = req.body;
 
     // Generar código único
-    let codigo = generateCode();
-    // (En producción haríamos un loop para asegurar que no se repita, por ahora sirve)
+    let codigo;
+    let existe = true;
+
+    while (existe) {
+      codigo = generateCode(); // Generar codigo
+      // Busca si alguien lo tiene
+      const aulaConEseCodigo = await Classroom.findOne({
+        codigo_acceso: codigo,
+      });
+
+      if (!aulaConEseCodigo) {
+        existe = false; // Si nadie lo tiene, se rompe el ciclo
+      }
+    }
 
     const classroom = await Classroom.create({
       nombre,
@@ -58,4 +70,26 @@ const findClassroomByCode = async (req, res) => {
   }
 };
 
-module.exports = { createClassroom, findClassroomByCode };
+// @desc    Obtener MIS aulas (Solo para el Maestro)
+// @route   GET /api/classrooms/my-classrooms
+const getMyClassrooms = async (req, res) => {
+  try {
+    if (req.user.rol !== "maestro") {
+      return res.status(403).json({ message: "Acceso denegado" });
+    }
+
+    // lista de aulas del maestro con sus estudiantes
+    const classrooms = await Classroom.find({
+      maestro_id: req.user.id,
+    }).populate(
+      "alumnos",
+      "nombre edad genero progreso_xp actividades_completadas"
+    );
+
+    res.json(classrooms);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { createClassroom, findClassroomByCode, getMyClassrooms };

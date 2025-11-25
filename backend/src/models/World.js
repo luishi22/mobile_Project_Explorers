@@ -25,7 +25,7 @@ const WorldSchema = new mongoose.Schema({
     enum: ["facil", "medio", "dificil"],
     default: "facil",
   },
-  // 🔐 LA CLAVE: Este mundo pertenece a un Aula específica
+  // LA CLAVE: Este mundo pertenece a un Aula específica
   aula_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Classroom",

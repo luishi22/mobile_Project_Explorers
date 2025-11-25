@@ -2,9 +2,7 @@ const World = require("../models/World");
 const Post = require("../models/Post");
 const Classroom = require("../models/Classroom");
 
-// ==========================================
-// 🌍 GESTIÓN DE MUNDOS Y ACTIVIDADES
-// ==========================================
+// GESTIÓN DE MUNDOS Y ACTIVIDADES
 
 // @desc    Crear un Nuevo Mundo (Ej: "La Selva")
 // @route   POST /api/content/worlds
@@ -21,7 +19,7 @@ const createWorld = async (req, res) => {
       nombre,
       descripcion,
       imagen_portada,
-      aula_id, // ¡Importante! El mundo pertenece a un salón específico
+      aula_id, //El mundo pertenece a un salón específico
     });
 
     res.status(201).json(world);
@@ -37,14 +35,14 @@ const addActivityToWorld = async (req, res) => {
     const { titulo, video_url, imagen_preview, recompensa_xp } = req.body;
     const worldId = req.params.id; // El ID del mundo viene en la URL
 
-    // 1. Buscar el mundo
+    // Buscar el mundo
     const world = await World.findById(worldId);
 
     if (!world) {
       return res.status(404).json({ message: "Mundo no encontrado" });
     }
 
-    // 2. Crear el objeto de la actividad
+    // Crear el objeto de la actividad
     const newActivity = {
       titulo,
       video_url, // Link de YouTube
@@ -52,10 +50,10 @@ const addActivityToWorld = async (req, res) => {
       recompensa_xp: recompensa_xp || 10,
     };
 
-    // 3. Empujar al arreglo de actividades
+    // Empujar al arreglo de actividades
     world.actividades.push(newActivity);
 
-    // 4. Guardar cambios
+    // Guardar cambios
     await world.save();
 
     res.status(201).json(world);
@@ -76,9 +74,7 @@ const getWorldsByClassroom = async (req, res) => {
   }
 };
 
-// ==========================================
-// 📰 GESTIÓN DE POSTS (NOTICIAS)
-// ==========================================
+// GESTIÓN DE POSTS (NOTICIAS)
 
 // @desc    Crear un Post (Aviso para padres)
 // @route   POST /api/content/posts
