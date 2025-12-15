@@ -2,13 +2,12 @@ const World = require("../models/World");
 const Post = require("../models/Post");
 const Classroom = require("../models/Classroom");
 
-// GESTIÓN DE MUNDOS Y ACTIVIDADES
+// ================= GESTIÓN DE MUNDOS =================
 
-// @desc    Crear un Nuevo Mundo (Ej: "La Selva")
+// @desc    Crear un Nuevo Mundo
 // @route   POST /api/content/worlds
 const createWorld = async (req, res) => {
   try {
-    // Solo el maestro puede crear
     if (req.user.rol !== "maestro") {
       return res.status(403).json({ message: "Acceso denegado" });
     }
@@ -19,7 +18,8 @@ const createWorld = async (req, res) => {
       nombre,
       descripcion,
       imagen_portada,
-      aula_id, //El mundo pertenece a un salón específico
+      aula_id,
+      // NOTA: Ya no guardamos dificultad aquí.
     });
 
     res.status(201).json(world);
@@ -28,32 +28,37 @@ const createWorld = async (req, res) => {
   }
 };
 
-// @desc    Agregar Actividad a un Mundo (Ej: "Saltos de Rana")
+// @desc    Agregar Actividad a un Mundo
 // @route   POST /api/content/worlds/:id/activity
 const addActivityToWorld = async (req, res) => {
   try {
-    const { titulo, video_url, imagen_preview, recompensa_xp } = req.body;
-    const worldId = req.params.id; // El ID del mundo viene en la URL
+    // 🆕 RECIBIMOS 'dificultad' AQUÍ
+    const {
+      titulo,
+      descripcion,
+      video_url,
+      imagen_preview,
+      recompensa_xp,
+      dificultad,
+    } = req.body;
+    const worldId = req.params.id;
 
-    // Buscar el mundo
     const world = await World.findById(worldId);
 
     if (!world) {
       return res.status(404).json({ message: "Mundo no encontrado" });
     }
 
-    // Crear el objeto de la actividad
     const newActivity = {
       titulo,
-      video_url, // Link de YouTube
+      descripcion, // Guardamos la descripción
+      video_url,
       imagen_preview,
       recompensa_xp: recompensa_xp || 10,
+      dificultad: dificultad || "facil", // 🆕 Guardamos la dificultad (default facil)
     };
 
-    // Empujar al arreglo de actividades
     world.actividades.push(newActivity);
-
-    // Guardar cambios
     await world.save();
 
     res.status(201).json(world);
@@ -62,8 +67,46 @@ const addActivityToWorld = async (req, res) => {
   }
 };
 
-// @desc    Obtener Mundos de un Aula (Para que el niño los vea)
-// @route   GET /api/content/worlds/classroom/:aula_id
+// @desc    Editar una Actividad específica
+// @route   PUT /api/content/worlds/:worldId/activity/:activityId
+const updateActivity = async (req, res) => {
+  try {
+    const { worldId, activityId } = req.params;
+    // 🆕 Agregamos 'dificultad' para poder editarla
+    const {
+      titulo,
+      descripcion,
+      video_url,
+      imagen_preview,
+      recompensa_xp,
+      dificultad,
+    } = req.body;
+
+    const world = await World.findOneAndUpdate(
+      { _id: worldId, "actividades._id": activityId },
+      {
+        $set: {
+          "actividades.$.titulo": titulo,
+          "actividades.$.descripcion": descripcion,
+          "actividades.$.video_url": video_url,
+          "actividades.$.imagen_preview": imagen_preview,
+          "actividades.$.recompensa_xp": recompensa_xp,
+          "actividades.$.dificultad": dificultad, // 🆕 Actualizamos dificultad
+        },
+      },
+      { new: true }
+    );
+
+    res.json(world);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// ... (EL RESTO DE TUS FUNCIONES SE QUEDAN IGUAL: getWorldsByClassroom, createPost, etc.) ...
+// Copia y pega el resto de tu archivo original aquí abajo, ya que no requieren cambios.
+
+// @desc    Obtener Mundos de un Aula
 const getWorldsByClassroom = async (req, res) => {
   try {
     const { aula_id } = req.params;
@@ -74,41 +117,96 @@ const getWorldsByClassroom = async (req, res) => {
   }
 };
 
-// GESTIÓN DE POSTS (NOTICIAS)
-
-// @desc    Crear un Post (Aviso para padres)
-// @route   POST /api/content/posts
 const createPost = async (req, res) => {
   try {
-    if (req.user.rol !== "maestro") {
-      return res.status(403).json({ message: "Solo maestros publican" });
-    }
-
-    const { titulo, contenido, tipo, imagen_url, aula_id } = req.body;
-
+    const { titulo, contenido, tipo, adjuntos, aula_id } = req.body;
     const post = await Post.create({
       titulo,
       contenido,
       tipo,
-      imagen_url,
+      adjuntos: adjuntos || [],
       aula_id,
       autor_id: req.user.id,
     });
-
     res.status(201).json(post);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// @desc    Obtener Posts de mi Aula (Para el Home del Padre)
-// @route   GET /api/content/posts/classroom/:aula_id
 const getPostsByClassroom = async (req, res) => {
   try {
     const { aula_id } = req.params;
-    // Ordenar por fecha: los más nuevos primero (-1)
-    const posts = await Post.find({ aula_id }).sort({ fecha_publicacion: -1 });
+    const posts = await Post.find({ aula_id })
+      .sort({ fecha_publicacion: -1 })
+      .populate("autor_id", "nombre email")
+      .populate("aula_id", "nombre");
     res.json(posts);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getWorldById = async (req, res) => {
+  try {
+    const world = await World.findById(req.params.id);
+    if (!world) return res.status(404).json({ message: "Mundo no encontrado" });
+    res.json(world);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const deleteActivity = async (req, res) => {
+  try {
+    const { worldId, activityId } = req.params;
+    const world = await World.findByIdAndUpdate(
+      worldId,
+      { $pull: { actividades: { _id: activityId } } },
+      { new: true }
+    );
+    if (!world) return res.status(404).json({ message: "Mundo no encontrado" });
+    res.json(world);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const updateWorld = async (req, res) => {
+  try {
+    const world = await World.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+    res.json(world);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const deleteWorld = async (req, res) => {
+  try {
+    await World.findByIdAndDelete(req.params.id);
+    res.json({ message: "Mundo eliminado" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const updatePost = async (req, res) => {
+  try {
+    const post = await Post.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+    res.json(post);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const deletePost = async (req, res) => {
+  try {
+    await Post.findByIdAndDelete(req.params.id);
+    res.json({ message: "Post eliminado" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -118,6 +216,13 @@ module.exports = {
   createWorld,
   addActivityToWorld,
   getWorldsByClassroom,
+  getWorldById,
+  updateWorld,
+  deleteWorld,
+  updateActivity,
+  deleteActivity,
   createPost,
   getPostsByClassroom,
+  updatePost,
+  deletePost,
 };

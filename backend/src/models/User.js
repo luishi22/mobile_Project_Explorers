@@ -19,6 +19,12 @@ const UserSchema = new mongoose.Schema({
     enum: ["maestro", "padre"],
     default: "padre",
   },
+  // 👇 NUEVO CAMPO AGREGADO
+  foto_perfil: {
+    type: String,
+    default: "https://cdn-icons-png.flaticon.com/512/847/847969.png", // Avatar genérico por defecto
+  },
+  // 👆 FIN NUEVO CAMPO
   fecha_registro: {
     type: Date,
     default: Date.now,

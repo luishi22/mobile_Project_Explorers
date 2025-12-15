@@ -82,4 +82,69 @@ const markActivityComplete = async (req, res) => {
   }
 };
 
-module.exports = { createStudent, getMyChildren, markActivityComplete };
+// @desc    Editar Estudiante
+// @route   PUT /api/students/:id
+const updateStudent = async (req, res) => {
+  try {
+    // Permitimos editar nombre, edad y género
+    const student = await Student.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+    res.json(student);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Eliminar Estudiante
+// @route   DELETE /api/students/:id
+const deleteStudent = async (req, res) => {
+  try {
+    const studentId = req.params.id;
+
+    // 1. Buscar al estudiante para saber cuál era su aula
+    const student = await Student.findById(studentId);
+    if (!student)
+      return res.status(404).json({ message: "Estudiante no encontrado" });
+
+    // 2. Sacarlo de la lista del Aula ($pull)
+    await Classroom.findByIdAndUpdate(student.aula_id, {
+      $pull: { alumnos: studentId },
+    });
+
+    // 3. Eliminarlo físicamente
+    await Student.findByIdAndDelete(studentId);
+
+    res.json({ message: "Estudiante eliminado" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Obtener estudiantes de un aula específica (Vista Maestro)
+// @route   GET /api/students/classroom/:aulaId
+const getStudentsByClassroom = async (req, res) => {
+  try {
+    const { aulaId } = req.params;
+
+    // Buscamos estudiantes que pertenezcan a esa aula
+    // Ordenamos por XP descendente (Ranking) para gamificación
+    const students = await Student.find({ aula_id: aulaId }).sort({
+      progreso_xp: -1,
+    });
+
+    res.json(students);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Exportar
+module.exports = {
+  createStudent,
+  getMyChildren,
+  markActivityComplete,
+  updateStudent,
+  deleteStudent,
+  getStudentsByClassroom,
+};

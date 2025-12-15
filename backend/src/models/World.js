@@ -1,43 +1,34 @@
 const mongoose = require("mongoose");
 
-// Sub-esquema para las Actividades (No se guarda en una colección aparte, vive dentro del Mundo)
+// 1. AHORA LA DIFICULTAD VIVE AQUÍ
 const ActivitySchema = new mongoose.Schema({
   titulo: { type: String, required: true },
   descripcion: String,
-  video_url: { type: String, required: true }, // Link de YouTube
-  imagen_preview: String, // Link de la miniatura (Cloudinary)
-  recompensa_xp: { type: Number, default: 10 }, // Puntos que gana el niño
-  orden: { type: Number, default: 0 }, // Para saber cuál va primero (1, 2, 3...)
-});
+  video_url: { type: String, required: true },
+  imagen_preview: String,
+  recompensa_xp: { type: Number, default: 10 },
 
-const WorldSchema = new mongoose.Schema({
-  nombre: {
-    type: String,
-    required: true, // Ej: "Mundo Selva"
-  },
-  descripcion: String,
-  imagen_portada: {
-    type: String,
-    required: true, // Link de Cloudinary
-  },
-  nivel_dificultad: {
+  dificultad: {
     type: String,
     enum: ["facil", "medio", "dificil"],
     default: "facil",
   },
-  // LA CLAVE: Este mundo pertenece a un Aula específica
+
+  orden: { type: Number, default: 0 },
+});
+
+const WorldSchema = new mongoose.Schema({
+  nombre: { type: String, required: true },
+  descripcion: String,
+  imagen_portada: { type: String, required: true },
+
   aula_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Classroom",
     required: true,
   },
-  // Aquí guardamos las clases/niveles de este mundo
   actividades: [ActivitySchema],
-
-  fecha_creacion: {
-    type: Date,
-    default: Date.now,
-  },
+  fecha_creacion: { type: Date, default: Date.now },
 });
 
 module.exports = mongoose.model("World", WorldSchema);

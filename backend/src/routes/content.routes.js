@@ -1,23 +1,42 @@
 const express = require("express");
 const router = express.Router();
 const {
+  // Mundos
   createWorld,
-  addActivityToWorld,
   getWorldsByClassroom,
+  getWorldById,
+  updateWorld,
+  deleteWorld,
+
+  // Actividades
+  addActivityToWorld,
+  updateActivity,
+  deleteActivity,
+
+  // Posts (Noticias)
   createPost,
   getPostsByClassroom,
+  updatePost,
+  deletePost,
 } = require("../controllers/contentController");
 const protect = require("../middlewares/authMiddleware");
 
-// Todas estas rutas requieren estar logueado (protect)
+// ================= MUNDOS =================
+router.post("/worlds", protect, createWorld);
+router.get("/worlds/classroom/:aula_id", protect, getWorldsByClassroom); // Listar todos
+router.get("/worlds/:id", protect, getWorldById); // Ver uno específico (y sus actividades)
+router.put("/worlds/:id", protect, updateWorld);
+router.delete("/worlds/:id", protect, deleteWorld);
 
-// --- Mundos y Actividades ---
-router.post("/worlds", protect, createWorld); // Crear Mundo
-router.post("/worlds/:id/activity", protect, addActivityToWorld); // Agregar Actividad
-router.get("/worlds/classroom/:aula_id", protect, getWorldsByClassroom); // Ver Mundos
+// ================= ACTIVIDADES =================
+router.post("/worlds/:id/activity", protect, addActivityToWorld);
+router.put("/worlds/:worldId/activity/:activityId", protect, updateActivity);
+router.delete("/worlds/:worldId/activity/:activityId", protect, deleteActivity);
 
-// --- Posts (Noticias) ---
-router.post("/posts", protect, createPost); // Crear Noticia
-router.get("/posts/classroom/:aula_id", protect, getPostsByClassroom); // Ver Noticias
+// ================= POSTS (NOTICIAS) =================
+router.post("/posts", protect, createPost);
+router.get("/posts/classroom/:aula_id", protect, getPostsByClassroom);
+router.put("/posts/:id", protect, updatePost);
+router.delete("/posts/:id", protect, deletePost);
 
 module.exports = router;

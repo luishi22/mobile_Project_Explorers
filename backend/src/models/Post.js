@@ -1,29 +1,28 @@
 const mongoose = require("mongoose");
 
 const PostSchema = new mongoose.Schema({
-  titulo: {
-    type: String,
-    required: true,
-  },
-  contenido: {
-    type: String,
-    required: true, // El texto del consejo o aviso
-  },
+  titulo: { type: String, required: true },
+  contenido: { type: String, required: true },
   tipo: {
     type: String,
     enum: ["aviso", "tip", "tarea", "dato_curioso"],
     default: "aviso",
   },
-  imagen_url: String, // Opcional (Foto o PDF subido a Cloudinary)
-  link_externo: String, // Opcional (Si quieres poner un link a una web externa)
 
-  // LA CLAVE: Solo los padres de esta aula verán este post
+  // Array de objetos
+  adjuntos: [
+    {
+      url: { type: String, required: true },
+      tipo: { type: String, enum: ["image", "file"], default: "image" }, // Saber si es foto o doc
+      nombre: String, // Nombre del archivo para mostrarlo
+    },
+  ],
+
   aula_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Classroom",
     required: true,
   },
-  // Saber qué profesor lo escribió (útil si hay auxiliares)
   autor_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
