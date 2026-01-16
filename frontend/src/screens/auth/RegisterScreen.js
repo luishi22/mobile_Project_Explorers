@@ -21,9 +21,9 @@ const RegisterScreen = ({ navigation }) => {
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rol, setRol] = useState("padre"); // Default: Padre
+  const [rol, setRol] = useState("padre");
 
-  // 👇 ESTADO PARA VISIBILIDAD DE CONTRASEÑA
+  // ESTADO PARA VISIBILIDAD DE CONTRASEÑA
   const [showPassword, setShowPassword] = useState(false);
 
   const { register } = useContext(AuthContext);
@@ -157,6 +157,7 @@ const RegisterScreen = ({ navigation }) => {
                 />
                 <TextInput
                   style={styles.input}
+                  placeholderTextColor="#999"
                   placeholder="Nombre Completo"
                   value={nombre}
                   onChangeText={setNombre}
@@ -172,6 +173,7 @@ const RegisterScreen = ({ navigation }) => {
                 />
                 <TextInput
                   style={styles.input}
+                  placeholderTextColor="#999"
                   placeholder="Correo Electrónico"
                   keyboardType="email-address"
                   autoCapitalize="none"
@@ -180,7 +182,7 @@ const RegisterScreen = ({ navigation }) => {
                 />
               </View>
 
-              {/* 👇 INPUT DE CONTRASEÑA CON OJO */}
+              {/* INPUT DE CONTRASEÑA CON OJO */}
               <View style={styles.inputContainer}>
                 <Ionicons
                   name="lock-closed-outline"
@@ -191,6 +193,7 @@ const RegisterScreen = ({ navigation }) => {
                 <TextInput
                   style={styles.input}
                   placeholder="Contraseña (Mín 6)"
+                  placeholderTextColor="#999"
                   secureTextEntry={!showPassword} // Dinámico
                   value={password}
                   onChangeText={setPassword}

@@ -167,6 +167,7 @@ const ProfileScreen = ({ navigation }) => {
             value={password}
             onChangeText={setPassword}
             placeholder="Dejar vacío para no cambiar"
+            placeholderTextColor="#888"
             // 👇 Lógica del ojo: Si showPassword es true, NO es seguro (texto plano)
             secureTextEntry={!showPassword}
           />

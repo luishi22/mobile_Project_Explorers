@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   Alert,
+  Image, // 👈 1. IMPORTAR IMAGE
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
@@ -17,11 +18,10 @@ import { AuthContext } from "../../context/AuthContext";
 import api from "../../services/api";
 import { useFocusEffect } from "@react-navigation/native";
 import Toast from "react-native-toast-message";
-// 👇 1. IMPORTAR CLIPBOARD
 import * as Clipboard from "expo-clipboard";
 
 const TeacherHomeScreen = ({ navigation }) => {
-  const { user, logout } = useContext(AuthContext);
+  const { user } = useContext(AuthContext); // user ya trae foto_perfil
   const [classrooms, setClassrooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -51,7 +51,6 @@ const TeacherHomeScreen = ({ navigation }) => {
     }, [])
   );
 
-  // 👇 2. FUNCIÓN PARA COPIAR AL PORTAPAPELES
   const handleCopyCode = async (code) => {
     await Clipboard.setStringAsync(code);
     Toast.show({
@@ -161,7 +160,6 @@ const TeacherHomeScreen = ({ navigation }) => {
 
       <View style={styles.divider} />
 
-      {/* 👇 3. AQUÍ CAMBIAMOS EL VIEW POR TOUCHABLEOPACITY */}
       <TouchableOpacity
         style={styles.codeContainer}
         onPress={() => handleCopyCode(item.codigo_acceso)}
@@ -183,16 +181,26 @@ const TeacherHomeScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
+
+      {/* 👇 2. HEADER MEJORADO CON FOTO */}
       <View style={styles.header}>
         <View>
           <Text style={styles.welcomeText}>Hola Profe,</Text>
           <Text style={styles.userName}>{user?.nombre}</Text>
         </View>
+
         <TouchableOpacity
           onPress={() => navigation.navigate("Profile")}
-          style={styles.logoutButton}
+          style={styles.profileBtn}
         >
-          <Ionicons name="settings-outline" size={24} color="#fff" />
+          {user?.foto_perfil ? (
+            <Image
+              source={{ uri: user.foto_perfil }}
+              style={styles.profileAvatar}
+            />
+          ) : (
+            <Ionicons name="settings-outline" size={24} color="#fff" />
+          )}
         </TouchableOpacity>
       </View>
 
@@ -277,11 +285,24 @@ const styles = StyleSheet.create({
   },
   welcomeText: { color: "rgba(255,255,255,0.8)", fontSize: 16 },
   userName: { color: "#fff", fontSize: 24, fontWeight: "bold" },
-  logoutButton: {
+
+  // 👇 3. ESTILOS NUEVOS PARA EL BOTÓN DE PERFIL
+  profileBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: "rgba(255,255,255,0.2)",
-    padding: 10,
-    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden", // Importante para que la foto sea redonda
   },
+  profileAvatar: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  // 👆 FIN ESTILOS NUEVOS
+
   content: { flex: 1, padding: 20 },
   sectionHeader: {
     flexDirection: "row",
@@ -317,22 +338,19 @@ const styles = StyleSheet.create({
   actionButtons: { flexDirection: "row" },
   iconBtn: { marginLeft: 10, padding: 5 },
   divider: { height: 1, backgroundColor: "#eee", marginVertical: 10 },
-
-  // ESTILOS MEJORADOS PARA EL CÓDIGO
   codeContainer: {
     backgroundColor: "#FAFAFA",
     padding: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#A5D6A7", // Borde verde suave
+    borderColor: "#A5D6A7",
     borderStyle: "dashed",
-    flexDirection: "row", // Para poner el ícono al lado
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
   },
   codeLabel: { fontSize: 14, color: "#555", fontWeight: "bold" },
   codeHighlight: { color: "#2E7D32", fontSize: 16, letterSpacing: 1 },
-
   emptyText: { textAlign: "center", marginTop: 50, color: "#888" },
   fab: {
     position: "absolute",

@@ -20,13 +20,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { AuthContext } from "../../context/AuthContext";
 import api from "../../services/api";
 import { useFocusEffect } from "@react-navigation/native";
-// 👇 1. IMPORTAR ASYNC STORAGE
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width, height } = Dimensions.get("window");
 
 const ParentHomeScreen = ({ navigation }) => {
-  const { user } = useContext(AuthContext);
+  const { user } = useContext(AuthContext); // Aquí ya viene user.foto_perfil
 
   const [children, setChildren] = useState([]);
   const [currentChild, setCurrentChild] = useState(null);
@@ -56,35 +55,26 @@ const ParentHomeScreen = ({ navigation }) => {
       const res = await api.get("/students/my-children");
       setChildren(res.data);
 
-      // Si no hay hijos, terminamos
       if (res.data.length === 0) {
         setLoading(false);
         return;
       }
 
-      // 🧠 LÓGICA DE MEMORIA INTELIGENTE
       if (!currentChild) {
-        // Caso A: Es la primera carga (currentChild es null)
-        // Intentamos recuperar el último seleccionado de la memoria
         const lastId = await AsyncStorage.getItem("lastSelectedChildId");
-
-        let childToSelect = res.data[0]; // Por defecto el primero
+        let childToSelect = res.data[0];
 
         if (lastId) {
           const found = res.data.find((c) => c._id === lastId);
           if (found) childToSelect = found;
         }
 
-        // Seleccionamos sin animación de carga (switching false) para que se sienta instantáneo
         setCurrentChild(childToSelect);
         fetchPosts(childToSelect);
       } else {
-        // Caso B: Ya teníamos uno seleccionado (volvemos de otra pantalla)
-        // Solo refrescamos sus datos por si ganó XP
         const updatedCurrent = res.data.find((c) => c._id === currentChild._id);
         if (updatedCurrent) {
-          setCurrentChild(updatedCurrent); // Actualizamos silenciosamente
-          // Opcional: refrescar posts si quieres
+          setCurrentChild(updatedCurrent);
         }
         setLoading(false);
       }
@@ -122,17 +112,13 @@ const ParentHomeScreen = ({ navigation }) => {
     }, [])
   );
 
-  // 💾 GUARDAR SELECCIÓN EN MEMORIA
   const handleSelectChild = async (child) => {
     setShowChildSelector(false);
     if (currentChild?._id === child._id) return;
 
     setSwitching(true);
     setCurrentChild(child);
-
-    // Guardamos en el celular a quién eligió el padre
     await AsyncStorage.setItem("lastSelectedChildId", child._id);
-
     fetchPosts(child);
   };
 
@@ -165,7 +151,6 @@ const ParentHomeScreen = ({ navigation }) => {
     }
   };
 
-  // ... (El resto de funciones auxiliares como getFileInfo, renderPost siguen igual)
   const getFileInfo = (filename) => {
     if (!filename) return { icon: "document", color: "#9E9E9E", label: "DOC" };
     const ext = filename.split(".").pop().toLowerCase();
@@ -293,6 +278,7 @@ const ParentHomeScreen = ({ navigation }) => {
     );
   };
 
+  // VISTA VACÍA
   if (!loading && children.length === 0) {
     return (
       <View style={styles.emptyContainer}>
@@ -328,6 +314,7 @@ const ParentHomeScreen = ({ navigation }) => {
     <View style={styles.container}>
       <StatusBar style="light" />
 
+      {/* --- HEADER --- */}
       <View style={styles.mainHeader}>
         <View>
           <Text style={styles.welcome}>Familia de</Text>
@@ -346,11 +333,20 @@ const ParentHomeScreen = ({ navigation }) => {
             />
           </TouchableOpacity>
         </View>
+
+        {/* 👇 AQUÍ ESTÁ EL CAMBIO DE LA FOTO DEL PADRE */}
         <TouchableOpacity
           onPress={() => navigation.navigate("Profile")}
           style={styles.profileBtn}
         >
-          <Ionicons name="person" size={20} color="#FF8F00" />
+          {user?.foto_perfil ? (
+            <Image
+              source={{ uri: user.foto_perfil }}
+              style={styles.profileAvatar}
+            />
+          ) : (
+            <Ionicons name="person" size={20} color="#FF8F00" />
+          )}
         </TouchableOpacity>
       </View>
 
@@ -527,6 +523,7 @@ const ParentHomeScreen = ({ navigation }) => {
               value={editName}
               onChangeText={setEditName}
               placeholder="Ej: Pepito"
+              placeholderTextColor="#999" // 👈 FIX PLACEHOLDER
             />
 
             <Text style={styles.label}>Edad:</Text>
@@ -537,6 +534,7 @@ const ParentHomeScreen = ({ navigation }) => {
               keyboardType="numeric"
               maxLength={2}
               placeholder="Ej: 5"
+              placeholderTextColor="#999" // 👈 FIX PLACEHOLDER
             />
 
             <Text style={styles.label}>Personaje:</Text>
@@ -656,6 +654,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden", // Para que la imagen no se salga del círculo
+  },
+  profileAvatar: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
   },
   playSection: { padding: 20 },
   playBtn: {
@@ -858,6 +862,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderWidth: 1,
     borderColor: "#eee",
+    color: "#333", // Asegura que el texto escrito también sea visible
   },
   genderRow: {
     flexDirection: "row",

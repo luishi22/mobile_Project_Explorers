@@ -89,6 +89,7 @@ const JoinClassScreen = ({ navigation }) => {
           <TextInput
             style={styles.input}
             placeholder="Ej: A1B2C3"
+            placeholderTextColor="#999"
             value={code}
             onChangeText={(text) => setCode(text.toUpperCase())} // Auto mayúsculas
             maxLength={8}

@@ -121,7 +121,7 @@ const LoginScreen = ({ navigation }) => {
               <TextInput
                 style={styles.inputPassword}
                 placeholder="Contraseña"
-                placeholderTextColor="#888"
+                placeholderTextColor="#999"
                 secureTextEntry={!showPassword}
                 value={password}
                 onChangeText={setPassword}

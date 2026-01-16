@@ -78,6 +78,7 @@ const CreateChildScreen = ({ route, navigation }) => {
           placeholder="Ej: Pepito"
           value={nombre}
           onChangeText={setNombre}
+          placeholderTextColor="#999"
         />
 
         {/* Input Edad */}
@@ -86,6 +87,7 @@ const CreateChildScreen = ({ route, navigation }) => {
           style={styles.input}
           placeholder="Ej: 5"
           value={edad}
+          placeholderTextColor="#999"
           onChangeText={setEdad}
           keyboardType="numeric"
           maxLength={2}
