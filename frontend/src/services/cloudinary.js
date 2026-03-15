@@ -3,7 +3,7 @@ import * as DocumentPicker from "expo-document-picker";
 import { Alert } from "react-native";
 
 // TUS DATOS
-const CLOUD_NAME = "du7ywq0k1";
+const CLOUD_NAME = "dzezivkyf";
 const UPLOAD_PRESET = "exploradores";
 
 const URL_IMAGE = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
@@ -72,7 +72,7 @@ export const pickDocument = async () => {
     ) {
       Alert.alert(
         "Archivo no permitido",
-        "Por favor sube solo Documentos (PDF, Office) o Imágenes."
+        "Por favor sube solo Documentos (PDF, Office) o Imágenes.",
       );
       return null; // ¡RECHAZADO! No retornamos nada.
     }
