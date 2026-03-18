@@ -3,11 +3,11 @@ import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage"; // <--- Importamos esto
 
 // ⚠️ REVISA QUE TU IP SIGA SIENDO ESTA (A veces el router la cambia)
-//const PROD_URL = "https://mobile-project-explorers.onrender.com/api";
+const PROD_URL = "https://mobile-project-explorers.onrender.com/api";
 
-//const BASE_URL = Platform.OS === "android" ? PROD_URL : "http://localhost:3000/api";
-const LOCAL_URL = "http://192.168.1.11:5000/api"; // <-- ¡CAMBIA LAS X POR TU IP!
-const BASE_URL = LOCAL_URL;
+const BASE_URL =
+  Platform.OS === "android" ? PROD_URL : "http://localhost:3000/api";
+
 const api = axios.create({
   baseURL: BASE_URL,
   headers: {
