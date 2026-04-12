@@ -53,7 +53,7 @@ const ActivityScreen = ({ route, navigation }) => {
     useCallback(() => {
       fetchActivities();
       startPulse();
-    }, [])
+    }, []),
   );
 
   const startPulse = () => {
@@ -69,7 +69,7 @@ const ActivityScreen = ({ route, navigation }) => {
           duration: 800,
           useNativeDriver: true,
         }),
-      ])
+      ]),
     ).start();
   };
 
@@ -85,7 +85,7 @@ const ActivityScreen = ({ route, navigation }) => {
   const isCompleted = (activityId) => {
     if (!child.actividades_completadas) return false;
     return child.actividades_completadas.some(
-      (a) => a.actividad_id === activityId
+      (a) => a.actividad_id === activityId,
     );
   };
 
@@ -155,8 +155,8 @@ const ActivityScreen = ({ route, navigation }) => {
     let btnColor = completed
       ? "#FFD700"
       : prevCompleted
-      ? "#00C853"
-      : "#ECEFF1";
+        ? "#00C853"
+        : "#ECEFF1";
     let iconName = completed ? "star" : prevCompleted ? "play" : "lock-closed";
     let iconColor = completed ? "#E65100" : prevCompleted ? "#fff" : "#B0BEC5";
     let isCurrent = !completed && prevCompleted;
@@ -203,7 +203,7 @@ const ActivityScreen = ({ route, navigation }) => {
 
           <View style={[zigZagStyle, { alignItems: "center" }]}>
             <Text style={styles.levelLabel}>Nivel {index + 1}</Text>
-            {/* 🆕 MOSTRAR DIFICULTAD EN EL CAMINO */}
+            {/* MOSTRAR DIFICULTAD EN EL CAMINO */}
             <View
               style={[
                 styles.miniDiffBadge,
@@ -237,10 +237,10 @@ const ActivityScreen = ({ route, navigation }) => {
               <Ionicons name="arrow-back" size={30} color="#fff" />
             </TouchableOpacity>
 
-            {/* 🆕 CONTADOR TOTAL DE MISIONES */}
+            {/* CONTADOR TOTAL DE MISIONES */}
             <View style={styles.missionCounter}>
               <Text style={styles.missionText}>
-                🎯 {activities.length} Misiones
+                {activities.length} Misiones
               </Text>
             </View>
 
@@ -347,14 +347,14 @@ const ActivityScreen = ({ route, navigation }) => {
                       </View>
                     </View>
 
-                    {/* 🆕 ETIQUETA DE DIFICULTAD EN MODAL */}
+                    {/* ETIQUETA DE DIFICULTAD EN MODAL */}
                     <View style={{ flexDirection: "row", marginBottom: 10 }}>
                       <View
                         style={[
                           styles.diffBadge,
                           {
                             backgroundColor: getDiffColor(
-                              selectedActivity.dificultad
+                              selectedActivity.dificultad,
                             ),
                           },
                         ]}

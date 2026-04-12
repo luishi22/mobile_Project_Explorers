@@ -45,7 +45,7 @@ const LoginScreen = ({ navigation }) => {
       Toast.show({
         type: "info",
         text1: "¡Faltan datos!",
-        text2: "Escribe tu correo y contraseña para entrar 🧐",
+        text2: "Escribe tu correo y contraseña para entrar a jugar",
         position: "top",
         visibilityTime: 4000,
       });
@@ -66,7 +66,7 @@ const LoginScreen = ({ navigation }) => {
       Toast.show({
         type: "success",
         text1: "¡Bienvenido!",
-        text2: "Preparando la aventura... 🚀",
+        text2: "Preparando la aventura...",
       });
     }
   };
@@ -137,6 +137,16 @@ const LoginScreen = ({ navigation }) => {
                 />
               </TouchableOpacity>
             </View>
+            {/* Agrega esto en tu diseño de Login */}
+            <TouchableOpacity
+              onPress={() => navigation.navigate("ForgotPassword")}
+            >
+              <Text
+                style={{ color: "blue", textAlign: "right", marginBottom: 20 }}
+              >
+                ¿Olvidaste tu contraseña?
+              </Text>
+            </TouchableOpacity>
 
             {/* BOTÓN ENTRAR */}
             <TouchableOpacity

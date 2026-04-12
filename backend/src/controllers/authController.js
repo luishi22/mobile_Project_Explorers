@@ -2,6 +2,7 @@ const User = require("../models/User");
 const Classroom = require("../models/Classroom");
 const Student = require("../models/Student");
 const World = require("../models/World");
+const sendEmail = require("../utils/sendEmail");
 
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -107,9 +108,6 @@ const updateProfile = async (req, res) => {
   }
 };
 
-// El deleteUser NO necesita cambios, ya que al borrar el usuario se borra su campo foto_perfil de la BD.
-// (La imagen se quedará en Cloudinary, pero para efectos de tesis está bien no complicar el borrado remoto).
-
 const deleteUser = async (req, res) => {
   // ... (Tu código actual de deleteUser está perfecto, déjalo igual)
   // Solo copio el inicio para referencia
@@ -127,7 +125,7 @@ const deleteUser = async (req, res) => {
       await World.deleteMany({ aula_id: { $in: aulasIds } });
       await Student.updateMany(
         { aula_id: { $in: aulasIds } },
-        { $unset: { aula_id: "" } }
+        { $unset: { aula_id: "" } },
       );
       await Classroom.deleteMany({ maestro_id: userId });
     } else if (user.rol === "padre") {
@@ -135,7 +133,7 @@ const deleteUser = async (req, res) => {
       const hijosIds = hijos.map((h) => h._id);
       await Classroom.updateMany(
         { alumnos: { $in: hijosIds } },
-        { $pull: { alumnos: { $in: hijosIds } } }
+        { $pull: { alumnos: { $in: hijosIds } } },
       );
       await Student.deleteMany({ padre_id: userId });
     }
@@ -146,9 +144,94 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    // 1. Buscamos si el usuario existe
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "No hay ningún usuario con este correo" });
+    }
+
+    // 2. Generamos un PIN de 6 dígitos al azar
+    const resetPin = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // 3. Lo guardamos en el usuario y le damos 15 minutos de vida
+    user.resetPasswordPin = resetPin;
+    user.resetPasswordExpire = Date.now() + 15 * 60 * 1000; // 15 minutos en milisegundos
+    await user.save();
+
+    // 4. Armamos y enviamos el correo
+    const message = `Hola,\n\nRecibimos una solicitud para cambiar tu contraseña en PEQUEMOV.\n\nTu código de verificación es: ${resetPin}\n\nEste código es válido por 15 minutos. Si no fuiste tú, ignora este correo.`;
+
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: "Código de recuperación de contraseña - PEQUEMOV",
+        message: message,
+      });
+
+      res.status(200).json({ message: "Correo enviado exitosamente" });
+    } catch (error) {
+      // Si el correo falla, borramos el PIN por seguridad
+      user.resetPasswordPin = undefined;
+      user.resetPasswordExpire = undefined;
+      await user.save();
+
+      console.error("Error enviando email:", error);
+      return res
+        .status(500)
+        .json({ message: "No se pudo enviar el correo electrónico" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  const { email, pin, newPassword } = req.body;
+
+  try {
+    // 1. Buscamos al usuario que tenga ese correo, ese PIN exacto, Y que el PIN no haya expirado
+    const user = await User.findOne({
+      email,
+      resetPasswordPin: pin,
+      resetPasswordExpire: { $gt: Date.now() }, // $gt significa "Greater Than" (Mayor que ahora)
+    });
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ message: "El código es inválido o ha expirado" });
+    }
+
+    // 2. Si todo está bien, encriptamos la nueva contraseña
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+
+    // 3. Borramos el PIN de la base de datos para que no se pueda volver a usar
+    user.resetPasswordPin = undefined;
+    user.resetPasswordExpire = undefined;
+
+    // 4. Guardamos los cambios
+    await user.save();
+
+    res.status(200).json({
+      message: "Contraseña actualizada exitosamente. Ya puedes iniciar sesión.",
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
   updateProfile,
   deleteUser,
+  forgotPassword,
+  resetPassword,
 };

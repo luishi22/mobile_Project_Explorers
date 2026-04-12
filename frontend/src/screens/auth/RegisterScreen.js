@@ -59,7 +59,7 @@ const RegisterScreen = ({ navigation }) => {
       Toast.show({
         type: "success",
         text1: "¡Cuenta Creada!",
-        text2: "Bienvenido a bordo explorador 🗺️",
+        text2: "Bienvenido a bordo explorador",
       });
     }
   };
