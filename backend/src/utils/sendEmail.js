@@ -1,31 +1,42 @@
-const nodemailer = require("nodemailer");
-const dns = require("dns");
-
-dns.setDefaultResultOrder("ipv4first");
+const axios = require("axios");
 
 const sendEmail = async (options) => {
-  // 1. Crear el "Transportador" (El camión de correos)
-  const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465, // El puerto seguro oficial de Google
-    secure: true, // Obliga a usar una conexión encriptada SSL
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-    family: 4,
-  });
+  // La URL oficial de la API de Brevo
+  const url = "https://api.brevo.com/v3/smtp/email";
 
-  // 2. Definir qué lleva el correo
-  const mailOptions = {
-    from: `"Soporte PEQUEMOV" <${process.env.EMAIL_USER}>`,
-    to: options.email,
+  // Estructuramos el mensaje exactamente como Brevo lo pide
+  const payload = {
+    sender: {
+      name: "Soporte PEQUEMOV",
+      email: process.env.EMAIL_USER, // Debe coincidir con tu correo verificado en Brevo
+    },
+    to: [
+      { email: options.email }, // El correo del usuario que olvidó su clave
+    ],
     subject: options.subject,
-    text: options.message,
+    textContent: options.message,
   };
 
-  // 3. ¡Enviarlo!
-  await transporter.sendMail(mailOptions);
+  // Configuramos las cabeceras con nuestra llave de seguridad
+  const headers = {
+    accept: "application/json",
+    "api-key": process.env.BREVO_API_KEY,
+    "content-type": "application/json",
+  };
+
+  try {
+    // Enviamos la petición por HTTPS (Puerto 443, libre de bloqueos)
+    await axios.post(url, payload, { headers });
+    console.log("Correo enviado exitosamente vía Brevo API");
+  } catch (error) {
+    console.error(
+      "Error de Brevo:",
+      error.response ? error.response.data : error.message,
+    );
+    throw new Error(
+      "No se pudo enviar el correo. Revisa la configuración de Brevo.",
+    );
+  }
 };
 
 module.exports = sendEmail;

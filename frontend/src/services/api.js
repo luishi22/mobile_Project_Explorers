@@ -3,8 +3,8 @@ import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage"; // <--- Importamos esto
 
 // REVISA QUE TU IP SIGA SIENDO ESTA (A veces el router la cambia)
-const PROD_URL = "https://mobile-project-explorers.onrender.com/api";
-//const PROD_URL = "http://192.168.1.11:5000/api"; // Cambia esto por tu IP local si no funciona localhost
+//const PROD_URL = "https://mobile-project-explorers.onrender.com/api";
+const PROD_URL = "http://192.168.1.11:5000/api"; // Cambia esto por tu IP local si no funciona localhost
 
 const BASE_URL =
   Platform.OS === "android" ? PROD_URL : "http://localhost:3000/api";
