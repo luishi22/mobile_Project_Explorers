@@ -1,4 +1,7 @@
 const nodemailer = require("nodemailer");
+const dns = require("dns");
+
+dns.setDefaultResultOrder("ipv4first");
 
 const sendEmail = async (options) => {
   // 1. Crear el "Transportador" (El camión de correos)
@@ -10,6 +13,7 @@ const sendEmail = async (options) => {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
+    family: 4,
   });
 
   // 2. Definir qué lleva el correo
